@@ -16,29 +16,33 @@ async def test_project(dut):
 
     #testing the cases 
    test_values = [
-    0b0000000000000000,  # All bits 0
-    0b0000000000000001,  # Single bit 0
-    0b0000000000000010,  # Single bit 1
-    0b0000000000000100,  # Single bit 2
-    0b0000000000001000,  # Single bit 3
-    0b0000000000010000,  # Single bit 4
-    0b0000000000100000,  # Single bit 5
-    0b0000000001000000,  # Single bit 6
-    0b0000000010000000,  # Single bit 7
-    0b0000000100000000,  # Single bit 8
-    0b0000001000000000,  # Single bit 9
-    0b0000010000000000,  # Single bit 10
-    0b0000100000000000,  # Single bit 11
-    0b0001000000000000,  # Single bit 12
-    0b0010000000000000,  # Single bit 13
-    0b0100000000000000,  # Single bit 14
-    0b1000000000000000,  # Single bit 15
-    0b1111111111111111,  # All bits 1
-    0b0000000000000011,  # Two bits set
-    0b0000000000000101,  # Two bits set
-    0b0000000000001001,  # Two bits set
+    0b0000000000000000,  
+    0b0000000000000001,  
+    0b0000000000000010,  
+    0b0000000000000100,  
+    0b0000000000001000,  
+    0b0000000000010000,  
+    0b0000000000100000,  
+    0b0000000001000000,  
+    0b0000000010000000,  
+    0b0000000100000000,  
+    0b0000001000000000,  
+    0b0000010000000000,  
+    0b0000100000000000,  
+    0b0001000000000000,  
+    0b0010000000000000,  
+    0b0100000000000000,  
+    0b1000000000000000,  
+    0b1111111111111111,  
+    0b0000000000000011,  
+    0b0000000000000101,  
+    0b0000000000001001,  
 ]
-
+def get_expected_C(In):
+    for i in range(15, -1, -1):  
+        if In & (1 << i):  
+            return i  
+        return 0b11110000  # Special case when all bits are 0
 for In_value in test_values:
     dut.In.value = In_value
     await ClockCycles(dut.clk, 1)

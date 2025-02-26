@@ -38,15 +38,18 @@ async def test_project(dut):
     0b0000000000000101,  
     0b0000000000001001,  
 ]
-def get_expected_C(In):
-    for i in range(15, -1, -1):  
-        if In & (1 << i):  
-            return i  
-        return 0b11110000  # Special case when all bits are 0
 for In_value in test_values:
     dut.In.value = In_value
     await ClockCycles(dut.clk, 1)
-    expected_C = get_expected_C(In_value)
+
+    # Calculate the expected value of C directly
+    expected_C = 0b11110000  # Default value for the special case (all bits 0)
+    for i in range(15, -1, -1):  # Iterate from bit 15 (MSB) to bit 0 (LSB)
+        if In_value & (1 << i):  # Check if the ith bit is set
+            expected_C = i  # Set expected_C to the index of the first '1'
+            break  # Exit the loop once the first '1' is found
+
+    # Compare the actual output with the expected value
     assert dut.C.value == expected_C, (
         f"Priority encoder failed for In = {In_value:016b}: "
         f"Expected C = {expected_C}, got {dut.C.value}"

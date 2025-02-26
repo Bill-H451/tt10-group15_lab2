@@ -44,10 +44,10 @@ async def test_project(dut):
 
     # Calculate the expected value of C directly
         expected_C = 0b11110000  # Default value for the special case (all bits 0)
-            for i in range(15, -1, -1):  # Iterate from bit 15 (MSB) to bit 0 (LSB)
-                if In_value & (1 << i):  # Check if the ith bit is set
-                    expected_C = i  # Set expected_C to the index of the first '1'
-                    break  # Exit the loop once the first '1' is found
+        for i in range(15, -1, -1):  # Iterate from bit 15 (MSB) to bit 0 (LSB)
+            if In_value & (1 << i):  # Check if the ith bit is set
+                expected_C = i  # Set expected_C to the index of the first '1'
+                break  # Exit the loop once the first '1' is found
 
     # Compare the actual output with the expected value
         assert dut.C.value == expected_C, (

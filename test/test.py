@@ -15,40 +15,38 @@ async def test_project(dut):
     cocotb.start_soon(clock.start())
 
     #testing the cases 
-    test_cases = [
-        (20, 30, 50),  # Basic case
-        (255, 0, 255),  # Max value of ui_in
-        (0, 255, 255),  # Max value of uio_in
-        (255, 255, 254),  # Overflow case (255 + 255 = 510, but 8-bit output wraps around to 254)
-        (0, 0, 0),  # Zero case
-    ]
-    for ui, uio, expected in test_cases:
-        dut.ui_in.value = ui
-        dut.uio_in.value = uio
-        await ClockCycles(dut.clk, 1)
-        assert dut.uo_out.value == expected, f"Summation failed: {ui} + {uio} != {expected}"
+   test_values = [
+    0b0000000000000000,  # All bits 0
+    0b0000000000000001,  # Single bit 0
+    0b0000000000000010,  # Single bit 1
+    0b0000000000000100,  # Single bit 2
+    0b0000000000001000,  # Single bit 3
+    0b0000000000010000,  # Single bit 4
+    0b0000000000100000,  # Single bit 5
+    0b0000000001000000,  # Single bit 6
+    0b0000000010000000,  # Single bit 7
+    0b0000000100000000,  # Single bit 8
+    0b0000001000000000,  # Single bit 9
+    0b0000010000000000,  # Single bit 10
+    0b0000100000000000,  # Single bit 11
+    0b0001000000000000,  # Single bit 12
+    0b0010000000000000,  # Single bit 13
+    0b0100000000000000,  # Single bit 14
+    0b1000000000000000,  # Single bit 15
+    0b1111111111111111,  # All bits 1
+    0b0000000000000011,  # Two bits set
+    0b0000000000000101,  # Two bits set
+    0b0000000000001001,  # Two bits set
+]
 
-    dut._log.info("Test priority encoder logic")
-
-    # Test priority encoder logic
-    dut.en.value = 1  # Enable the priority encoder
-
-    # Test all bits of In
-    for i in range(16):
-        dut.In.value = 1 << i  # Set only the ith bit to 1
-        await ClockCycles(dut.clk, 1)
-        assert dut.C.value == i, f"Priority encoder failed: Expected {i}, got {dut.C.value}"
-
-    # Test special case where all bits are 0
-    dut.In.value = 0
+for In_value in test_values:
+    dut.In.value = In_value
     await ClockCycles(dut.clk, 1)
-    assert dut.C.value == 0b11110000, f"Priority encoder failed: Expected 0b11110000, got {dut.C.value}"
-
-    # Test when en is low
-    dut.en.value = 0
-    dut.In.value = 0b00000001  # Set the least significant bit
-    await ClockCycles(dut.clk, 1)
-    assert dut.C.value == 0, f"Priority encoder failed: Expected 0 when en is low, got {dut.C.value}"
+    expected_C = get_expected_C(In_value)
+    assert dut.C.value == expected_C, (
+        f"Priority encoder failed for In = {In_value:016b}: "
+        f"Expected C = {expected_C}, got {dut.C.value}"
+    )
 
     # Reset
     dut._log.info("Reset")

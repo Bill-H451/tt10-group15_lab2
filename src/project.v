@@ -5,7 +5,7 @@
 
 `default_nettype none
 
-module priority_encoder (en, In, C); 
+module tt_um_pe (en, In, C); 
     input en;
     input [15:0] In;
     output reg [7:0] C; 

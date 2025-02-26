@@ -14,47 +14,6 @@ async def test_project(dut):
     clock = Clock(dut.clk, 10, units="us")
     cocotb.start_soon(clock.start())
 
-    #testing the cases 
-    test_values = [
-    0b0000000000000000,  
-    0b0000000000000001,  
-    0b0000000000000010,  
-    0b0000000000000100,  
-    0b0000000000001000,  
-    0b0000000000010000,  
-    0b0000000000100000,  
-    0b0000000001000000,  
-    0b0000000010000000,  
-    0b0000000100000000,  
-    0b0000001000000000,  
-    0b0000010000000000,  
-    0b0000100000000000,  
-    0b0001000000000000,  
-    0b0010000000000000,  
-    0b0100000000000000,  
-    0b1000000000000000,  
-    0b1111111111111111,  
-    0b0000000000000011,  
-    0b0000000000000101,  
-    0b0000000000001001,  
-]
-    for In_value in test_values:
-        dut.In.value = In_value
-        await ClockCycles(dut.clk, 1)
-
-    # Calculate the expected value of C directly
-        expected_C = 0b11110000  # Default value for the special case (all bits 0)
-        for i in range(15, -1, -1):  # Iterate from bit 15 (MSB) to bit 0 (LSB)
-            if In_value & (1 << i):  # Check if the ith bit is set
-                expected_C = i  # Set expected_C to the index of the first '1'
-                break  # Exit the loop once the first '1' is found
-
-    # Compare the actual output with the expected value
-        assert dut.C.value == expected_C, (
-            f"Priority encoder failed for In = {In_value:016b}: "
-            f"Expected C = {expected_C}, got {dut.C.value}"
-    )
-
     # Reset
     dut._log.info("Reset")
     dut.ena.value = 1
@@ -79,3 +38,30 @@ async def test_project(dut):
 
     # Keep testing the module by changing the input values, waiting for
     # one or more clock cycles, and asserting the expected output values.
+        # Test all combinations of ui_in and uio_in across 256 possible values
+    max_val = 255  # Maximum sum value allowed
+    a_vals = [i for i in range(max_val)]  # ui_in can range from 0 to 255
+    b_vals = [j for j in range(max_val)]  # uio_in can also range from 0 to 255
+
+    for i in range(len(a_vals)):
+        for j in range(len(b_vals)):
+            # Set the input values
+            dut.ui_in.value = a_vals[i]
+            dut.uio_in.value = b_vals[j]
+
+            # Wait for one or more clock cycles to see the output values
+            await ClockCycles(dut.clk, 20)  # Allow enough time for the DUT to process
+
+            # Log the output and check the assertion
+            dut._log.info(f"Test case ui_in={a_vals[i]}, uio_in={b_vals[j]} -> uo_out={dut.uo_out.value}")
+
+            # Expected output logic (assuming sum modulo 256, replace as per DUT logic)
+            expected_uo_out = (a_vals[i] + b_vals[j]) % 256
+
+            # Assert the output matches the expected value
+            assert int(dut.uo_out.value) == expected_uo_out, (
+                f"Test failed for ui_in={a_vals[i]}, uio_in={b_vals[j]}. Expected {expected_uo_out}, "
+                f"but got {dut.uo_out.value}")
+            
+            # Optionally log the test case result if the assertion passed
+            dut._log.info(f"Test passed for ui_in={a_vals[i]}, uio_in={b_vals[j]} with uo_out={dut.uo_out.value}")

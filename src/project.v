@@ -21,13 +21,7 @@ module tt_um_pe (
   assign uio_out = 0;
   assign uio_oe  = 0;
 
-  // List all unused inputs to prevent warnings
-  wire _unused = &{ena, clk, rst_n, 1'b0};
-
-endmodule
-
-module p_encoder (en, In, C); 
-    input en;
+  input en;
     input [15:0] In;
     output reg [7:0] C; 
 
@@ -52,7 +46,14 @@ module p_encoder (en, In, C);
             else if (In[0])  C <= 8'd0;
             else             C <= 8'b1111_0000; // Special case when all bits are 0
         end
-    end
+    end  
+  // List all unused inputs to prevent warnings
+  wire _unused = &{ena, clk, rst_n, 1'b0};
+
+endmodule
+
+module p_encoder (en, In, C); 
+    
 endmodule
 
 
